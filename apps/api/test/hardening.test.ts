@@ -66,7 +66,7 @@ describe('hardening', () => {
   it('rate limits repeated login attempts', async () => {
     const fresh = createServer()
     const attempts = []
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 55; i += 1) {
       attempts.push(
         await request(fresh)
           .post('/api/auth/login')

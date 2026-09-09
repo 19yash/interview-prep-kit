@@ -1,5 +1,6 @@
 {
   "name": "interview-prep-kit",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },
@@ -14,7 +15,8 @@
   },
   "dependencies": {
     "@ipk/core": "*",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

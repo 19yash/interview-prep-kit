@@ -1,5 +1,19 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
+
+const rootEnvPath = fileURLToPath(new URL('../../../.env', import.meta.url))
+const localEnvPath = resolve(process.cwd(), '.env')
+
+if (existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath })
+}
+if (existsSync(localEnvPath) && localEnvPath !== rootEnvPath) {
+  dotenv.config({ path: localEnvPath, override: true })
+}
+
 
 const EnvSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),

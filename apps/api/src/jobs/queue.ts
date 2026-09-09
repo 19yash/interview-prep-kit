@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { createGeminiClient, runPipeline, type LlmClient, type Progress } from '@ipk/core'
+import { env } from '../env.js'
 import { KitModel } from '../models/kit.js'
 
 /** Injected by tests so the real job path runs without a real provider. */
@@ -59,7 +60,7 @@ export function enqueueGeneration(kitId: string, llm?: LlmClient): void {
         jd: doc.input.jd,
         companyUrl: doc.input.companyUrl,
         days: doc.input.days,
-        llm: llm ?? testLlm ?? createGeminiClient(),
+        llm: llm ?? testLlm ?? createGeminiClient({ apiKey: env.GEMINI_API_KEY || undefined }),
         allowPrivate: process.env.NODE_ENV !== 'production',
         onProgress,
       })

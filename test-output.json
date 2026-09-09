@@ -1,0 +1,509 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-09-09T05:31:26.155Z",
+  "kits": [
+    {
+      "id": "stripe-billing-dev",
+      "status": "ok",
+      "kit": {
+        "source": {
+          "company": "Stripe",
+          "company_url": "https://stripe.com/",
+          "role": "Full-Stack Software Engineer (Billing & Subscriptions)",
+          "location": "Not specified",
+          "jd_chars": 399,
+          "researched_at": "2026-09-09T05:31:26.149Z",
+          "pages_used": [
+            "https://stripe.com/",
+            "https://stripe.com/in/careers",
+            "https://stripe.com/in/careers/compatibility",
+            "https://stripe.com/in/careers/emerging-talent",
+            "https://stripe.com/in/blog",
+            "https://stripe.com/in/customers/jobber"
+          ]
+        },
+        "company_brief": {
+          "summary": "Stripe provides financial infrastructure to help businesses grow their revenue, processing US$1.9 trillion in payments volume in 2025 and managing over 200 million active subscriptions. Their mission is to increase economic growth by building tools that make it easier for businesses to start and scale, and by creating economic infrastructure for AI. They power businesses of all sizes, from startups to Fortune 100 companies, across 160 countries.",
+          "what_they_do": "Stripe offers a comprehensive set of payments and financial tools that enable businesses to accept and optimize payments globally, implement various billing models, and offer financial services. They also build economic infrastructure for AI, including real-time agent micropayments and fraud prevention for new threats.",
+          "sources": [
+            "https://stripe.com/",
+            "https://stripe.com/in/careers",
+            "https://stripe.com/in/careers/compatibility",
+            "https://stripe.com/in/careers/emerging-talent",
+            "https://stripe.com/in/blog",
+            "https://stripe.com/in/customers/jobber",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHx7We6gYc1gSf7li5vLKvh-7wycOK4WxedyyPin3gFIkGTY7Tmua66E_yFnXPuIuE5mzo0bbGYV6ZFLAu0ClUzocLUeYBgkmftfdXHH7nNwKh8vGOXmIRltQLtKvmjxfTVeKsaqt9nOLD-oK8Ks8FqpwQsEodMt10K",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0XnaRcqLMI0rKls4CWUjvHKtgpVfCQjg0V3ZI4IrbC_6C9nP-P11CtJ5jxr0GgFzDcJPRytCIdbgKfNj1BtgTmvpNxfCCGdsSW0zVSQYg2hyDbY_ZFvp76uAoJSyQYocTtjt5_CDh7U1egi-CKR8dbGKFYTzWKvWz3T3AfM3l0Q==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEz7b1xbS6yEP4-L3ZnrhFhZb8sorBygZlU35qTgtK6vc0OFSqXlsD3V77kUw2PSO91vQksOnY1q94c0FW6gqClcRJzMiS2RqWK2BUE8XlNlF83SSNE99uAcqtBO1r1S3xgum8i1okbRtnibl8zNuNt_LzuuL1z_5Y=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHHVmVbBvm5hZMQk6ZQtN9o8yTgAsOSTURfJae0WTz2gHxQmeQsEjTi8VWjUq5gKS72T82hOsXToeS1y8EpcnKOq1_2Dyk6Isw6qW3IgNPWYsMdapADqQlbuGeeSx-WY71_ro-HEQj30_16FkDYIsJG_2TGEMA=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE_qTIXppCKISY_QDwbmkOhwIifAWss8bvgBzuPj9rZdz2N_GqmGIUhkujNKwfdysVQH8y46kE2-f1-A4Hr_GU6sR_FFYvy2K2I7OS3Ba5BRnbfzqQ__24nEtjevXKBlnge9T9aokVKLIY3426U4NG9bDeKLuGzDBIKLpQ6fPMpBw==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE07Tp86fGxPdtyzzEarNL0AmjB6QUGtiZ0AUAp689gwr21oldsquXsVhEdlz-TfN3BuywNSpJWUjUE2-DXLCYJhfJMeMEJQS0TSZ6CnqUQ1_ySUlQh2ms7qcHHm1sqrKZt02wgwP_zbLFcRoT9QM9M7pZto3szSryZtA==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFfjj4ZzW5QSHIY1F-dK-2VYA7Gxjz9IBAVPmeda7-01xMWx2kB8oJ3_orcN-7afWd0iMc_bOUUjm4hxYQWihPyIFCkFGzkVacR9vifc4GmbgUdHh7Y2hpKkdkP-pN-FHhCGoRFoNtV2ozAuYCPSyE6Eki-X8gBO7XrECBzfA==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFzigizg5sWK9qHB1cdf5FvbeJYQMEO9O160KxjHjZBbQN9E19HJ_XMWgaIFeBarIsrKvnGK2KslV4p9ixY3UPyzXpajk3j_LUU3h4F3fFTyldyVEofya-4uAigy_hW_Onz1TmO7LdzBVKO1vFIm8Kmd_xZjS6jHWw=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoDYfK-45d4RjGVcc9lPIsp3ZkjXBd6FmStxXjzlqaKKbxmiCpmSVSM_bAXGNmPnYM7CtGFfCgq3YCO4YxCBFBiHb9xlNvZTr9GhJfkaewfYAsO-zOBQUQGiqOHrRjI1HaCnFOI2DgIUHyCfU--L6cvRsurBLQ6M9m97mRVPQZE5AZ6g==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHKK0VBA3Q2XHyPbyDqyi7P68ngAnYeFyeLFRSaXMCjLF5yAD4djLw4YnOgABN_Cj9R5Ym3XPvuff-Cw6WEbNEnfs0llKDVAmhrn4ZnXVjCj-CZni6WHFYrSmWQ5hfpFNG9aJk79gVMv3bCqPVWXK1DN7jDIuDGpO2yVmOSF8-O2t94u2YPT-XCmcINqOwEQw=="
+          ]
+        },
+        "role": {
+          "title": "Full-Stack Software Engineer (Billing & Subscriptions)",
+          "seniority": "Senior",
+          "responsibilities": [
+            "build customer-facing dashboards in React/TypeScript",
+            "build distributed backend services in Node.js/PostgreSQL"
+          ],
+          "requirements": [
+            {
+              "id": "r1",
+              "text": "4+ years experience",
+              "kind": "behavioural",
+              "priority": "must"
+            },
+            {
+              "id": "r2",
+              "text": "deep knowledge of SQL transactions and indexing",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "r3",
+              "text": "REST/GraphQL API design",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "r4",
+              "text": "automated testing",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "r5",
+              "text": "experience with payment workflows",
+              "kind": "domain",
+              "priority": "nice"
+            },
+            {
+              "id": "r6",
+              "text": "Kafka",
+              "kind": "technical",
+              "priority": "nice"
+            },
+            {
+              "id": "r7",
+              "text": "Redis caching",
+              "kind": "technical",
+              "priority": "nice"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "q1",
+            "requirement_ids": [
+              "r2"
+            ],
+            "category": "technical",
+            "prompt": "In a billing system, a user's subscription status needs to be updated, and a corresponding entry made in an 'invoice_history' table. Describe how you would ensure atomicity and consistency for these operations using SQL transactions. Furthermore, if the 'invoice_history' table is growing very large, what indexing strategies would you consider to optimize queries that retrieve a user's invoice history by 'user_id' and 'invoice_date' range?",
+            "answer_outline": "The candidate should discuss using BEGIN TRANSACTION, COMMIT, and ROLLBACK to ensure atomicity. They should explain transaction isolation levels (e.g., READ COMMITTED, REPEATABLE READ) and their implications for data consistency in a billing context. For indexing, they should suggest a composite index on (user_id, invoice_date) for efficient range queries, discuss the benefits of B-tree indexes, and consider trade-offs between read performance and write overhead.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q2",
+            "requirement_ids": [
+              "r3"
+            ],
+            "category": "technical",
+            "prompt": "Design a REST API endpoint (or a GraphQL mutation) for a '/subscriptions' resource that allows a client to cancel an existing subscription. Detail the request and response structure, HTTP methods/GraphQL types, and discuss how you would handle idempotency for this operation. What considerations would you have for communicating the cancellation status asynchronously (e.g., to other internal services or the user)?",
+            "answer_outline": "For REST, the candidate should propose DELETE /subscriptions/{id} or POST /subscriptions/{id}/cancel with appropriate request bodies (e.g., reason) and HTTP status codes (200 OK, 202 Accepted, 204 No Content, 404 Not Found, 409 Conflict). For GraphQL, a cancelSubscription mutation. Idempotency can be achieved via a client-provided idempotency_key header or by making the operation inherently idempotent (cancelling an already cancelled subscription has no further effect). Asynchronous communication should mention webhooks, message queues (like Kafka), or event buses for internal service integration, and email/push notifications for user communication.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q3",
+            "requirement_ids": [
+              "r4"
+            ],
+            "category": "technical",
+            "prompt": "You are tasked with debugging a critical bug in a billing service. A test case 'test_subscription_renewal_failure' is consistently failing, but the error message is vague. Describe your systematic approach to diagnose and fix this bug. What types of automated tests would you consider adding or improving once the bug is fixed to prevent similar regressions in the future?",
+            "answer_outline": "The candidate should outline steps like reproducing the bug locally, using logging, setting breakpoints, and stepping through code. They should mention inspecting database states, API request/response payloads, and external service interactions. Hypotheses for causes (e.g., incorrect date calculations, race conditions, external service failures) should be discussed. After fixing, they should suggest adding more granular unit tests for specific logic (e.g., date arithmetic), integration tests covering the full renewal flow, and potentially end-to-end tests for critical paths, emphasizing clear test names and assertions.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q4",
+            "requirement_ids": [
+              "r6"
+            ],
+            "category": "technical",
+            "prompt": "Imagine a high-volume billing system where thousands of subscription events (e.g., 'subscription_created', 'payment_failed', 'subscription_cancelled') occur every second. How would you leverage Apache Kafka to build a robust and scalable event processing pipeline for these events? Discuss the benefits, potential challenges, and how you would ensure data consistency and ordering for critical events.",
+            "answer_outline": "The candidate should discuss Kafka's benefits: decoupling services, scalability, fault tolerance, replayability, and enabling real-time analytics. Challenges include operational overhead, ensuring message ordering, and achieving exactly-once processing semantics. They should propose topic design (e.g., a single 'subscription_events' topic partitioned by 'subscription_id' to ensure ordering for a given subscription), consumer groups for parallel processing, and consumer idempotency. Mentioning consumer offsets and acknowledgments for reliability is also key.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q5",
+            "requirement_ids": [
+              "r7"
+            ],
+            "category": "technical",
+            "prompt": "A billing dashboard frequently displays a user's current subscription details and recent invoices. This data is fetched from a relational database, leading to performance bottlenecks during peak hours. How could Redis caching be used to alleviate this issue? Describe a caching strategy, including considerations for cache invalidation and potential consistency issues between the cache and the database.",
+            "answer_outline": "The candidate should suggest caching frequently accessed, relatively static data like 'user_subscription_status' or 'last_N_invoices'. They should describe a caching strategy like cache-aside (read-through) or write-through. For cache invalidation, they should discuss Time-To-Live (TTL), explicit invalidation on database writes/updates (e.g., via application logic or a pub/sub mechanism), or a combination. They must address potential stale data issues and how to mitigate them (e.g., eventual consistency, shorter TTLs for highly critical data, background refresh).",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q6",
+            "requirement_ids": [
+              "r2",
+              "r3",
+              "r4"
+            ],
+            "category": "technical",
+            "prompt": "You need to implement a new feature: allowing users to 'pause' their subscription for a specified period. Design the API endpoint(s) for this feature (r3), describe the necessary database schema changes and how you'd manage the state transitions using SQL transactions (r2), and outline the automated tests you would write to ensure its correctness and robustness (r4).",
+            "answer_outline": "API Design (r3): Propose a POST /subscriptions/{id}/pause endpoint with a request body containing 'pause_start_date' and 'pause_end_date'. Discuss appropriate response codes (200/202) and idempotency. Database (r2): Suggest adding columns like 'pause_start_date', 'pause_end_date', 'is_paused' to the 'subscriptions' table. Emphasize using a SQL transaction to atomically update the subscription status and potentially log the pause event. Discuss handling concurrent updates or invalid pause periods within the transaction. Automated Testing (r4): Outline unit tests for date validation, state transition logic, and business rules. Describe integration tests for the API endpoint that verify database updates and correct behavior (e.g., subscription status changes to paused, then back to active after 'pause_end_date'). Mention edge cases like pausing an already paused subscription or invalid date ranges.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q7",
+            "requirement_ids": [
+              "r1"
+            ],
+            "category": "behavioural",
+            "prompt": "Tell me about a time you faced a particularly complex technical challenge in a billing or subscription system that required a significant architectural or design decision. Describe the problem, the options you considered, your ultimate decision, and the impact it had on the system or users.",
+            "answer_outline": "The candidate should describe a specific, complex technical problem within a billing or subscription context (e.g., ensuring data consistency, handling intricate pricing models, scaling for high transaction volume). They should detail the various solutions considered, the trade-offs of each, the rationale behind their chosen approach, and the measurable or observable outcomes and impact on the system's reliability, performance, or maintainability.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q8",
+            "requirement_ids": [
+              "r1"
+            ],
+            "category": "behavioural",
+            "prompt": "Describe a situation where you had to significantly refactor or redesign a critical component within a billing or subscription system due to scalability, maintainability, or performance issues. What was the state of the system initially, what steps did you take, and what was the ultimate outcome of your efforts?",
+            "answer_outline": "The candidate should explain a specific scenario where an existing billing or subscription component was problematic. They should detail their initial analysis of the issues, the plan for refactoring or redesign, the technical decisions made during the process, and the measurable improvements achieved (e.g., reduced bug count, improved deployment speed, better performance under load, easier feature development).",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q9",
+            "requirement_ids": [
+              "r3",
+              "r2"
+            ],
+            "category": "system-design",
+            "prompt": "Design a REST API for processing subscription payments. A key requirement is that payment processing must be highly available and respond quickly, even during peak loads. However, the system also needs to maintain accurate financial records in a relational database, where strict ACID properties are crucial for auditability. How would you design the API endpoints and the underlying data flow, considering the tension between immediate API response and guaranteed transactional integrity in the database?",
+            "answer_outline": "Discuss API idempotency (r3), asynchronous processing patterns (e.g., message queues) for payment processing, and eventual consistency for non-critical path data. Explain how to manage database transaction isolation levels (r2) and error handling to ensure financial accuracy. Highlight the trade-offs between synchronous database writes for immediate consistency and faster API responses using asynchronous processing.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q10",
+            "requirement_ids": [
+              "r2",
+              "r4"
+            ],
+            "category": "system-design",
+            "prompt": "Your billing system needs to support concurrent updates to a customer's subscription status (e.g., 'active' to 'canceled') and their associated balance. These updates can originate from various sources (API calls, scheduled jobs, manual adjustments). Design the database interaction layer, focusing on how you would ensure data consistency and prevent race conditions using SQL transactions and indexing (r2). Additionally, describe how you would implement automated tests (r4) to verify the correctness and robustness of your concurrency handling logic.",
+            "answer_outline": "Discuss optimistic vs. pessimistic locking strategies (e.g., version columns, SELECT FOR UPDATE) and appropriate indexing for WHERE clauses in update statements (r2). Explain transaction isolation levels. For testing (r4), describe unit tests for individual transaction logic, integration tests simulating concurrent requests, and stress tests to identify race conditions and ensure data integrity.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q11",
+            "requirement_ids": [
+              "r3",
+              "r4"
+            ],
+            "category": "system-design",
+            "prompt": "You are responsible for evolving a public-facing REST API for managing subscriptions. New features are constantly being added, requiring changes to existing endpoints or the introduction of new ones. The API must maintain backward compatibility for existing clients while allowing new features to be exposed. How would you design your API versioning strategy (r3) to manage these changes effectively? Furthermore, what automated testing strategies (r4) would you put in place to ensure that API changes do not break existing functionality or introduce regressions for different API versions?",
+            "answer_outline": "Discuss API versioning approaches (e.g., URI, header, query parameter) and deprecation strategies (r3). Emphasize the importance of clear documentation (e.g., OpenAPI/Swagger). For automated testing (r4), describe contract testing, end-to-end tests for different API versions, regression testing, and potentially consumer-driven contract testing to ensure backward compatibility and prevent regressions.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q12",
+            "requirement_ids": [
+              "r2",
+              "r3"
+            ],
+            "category": "system-design",
+            "prompt": "Design a system that exposes a REST API (r3) allowing users to query subscriptions with complex filtering criteria, such as 'all active subscriptions for customer X with product Y and a specific add-on, ordered by renewal date.' This API needs to be highly performant for reads, even with a large number of subscriptions (millions). Describe the database schema design, indexing strategies (r2), and API endpoint structure to support such queries efficiently. What trade-offs would you consider between read performance for complex queries and the overhead of maintaining data consistency during writes?",
+            "answer_outline": "Discuss database schema design (normalized vs. denormalized for reporting), specific indexing strategies (r2) like composite indexes, partial indexes, or materialized views. For the API (r3), describe query parameters, pagination, and filtering. Address the trade-offs between data duplication/eventual consistency for read performance and the complexity/overhead of ensuring data consistency during writes.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q13",
+            "requirement_ids": [
+              "r3",
+              "r2",
+              "r4"
+            ],
+            "category": "system-design",
+            "prompt": "Design a robust webhook system for your billing platform that notifies external services about critical billing events (e.g., 'invoice.paid', 'subscription.created'). The system must guarantee delivery, maintain event order for a given subscription, and handle failures gracefully. How would you design the API for webhook registration and event delivery (r3)? What database mechanisms (r2) would you use to store events and manage delivery attempts? Crucially, how would you ensure the entire system is thoroughly tested (r4) for reliability and correctness, including edge cases like network failures and subscriber downtime?",
+            "answer_outline": "Discuss webhook API design (r3) for registration, event types, and security. Detail event queueing mechanisms (e.g., custom DB-backed queue using transactions r2), retry strategies with exponential backoff, and idempotency for webhook receivers. For testing (r4), describe unit tests for queueing/retry logic, integration tests for end-to-end flow, fault injection testing for network failures, and mock webhook receivers to verify delivery guarantees and ordering.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q14",
+            "requirement_ids": [
+              "r2",
+              "r3"
+            ],
+            "category": "system-design",
+            "prompt": "Your company is migrating from a monolithic legacy billing system with a single relational database to a new microservices-based architecture. The new architecture needs to support existing customers and active subscriptions without downtime or data loss. Design a strategy for migrating the core subscription data and the associated billing logic. Specifically, address how you would handle data synchronization between the old and new systems during the transition (r2), and how the new microservices would expose their functionality via well-defined REST APIs (r3) while ensuring compatibility with any existing integrations. What are the key challenges and trade-offs in ensuring a smooth, zero-downtime migration?",
+            "answer_outline": "Discuss phased migration strategies like the Strangler Fig Pattern. Detail data synchronization techniques (r2) such as logical replication, change data capture (CDC), or dual-writes, emphasizing transactional integrity. Explain how an API Gateway can route requests and how API versioning (r3) ensures backward compatibility for new microservices. Highlight trade-offs between migration complexity, data consistency during transition, and potential for downtime.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q15",
+            "requirement_ids": [
+              "r5"
+            ],
+            "category": "company-fit",
+            "prompt": "Stripe's core mission is to increase the GDP of the internet by building economic infrastructure, with a significant focus on simplifying complex financial operations like billing and subscriptions. Given your experience with payment workflows (r5), what aspects of Stripe's mission or the challenges we address in the billing and subscriptions domain particularly excite you, and how do you envision your skills contributing to our user-centric approach?",
+            "answer_outline": "The candidate should articulate a genuine connection to Stripe's mission and specific products, demonstrating an understanding of the complexities in billing and subscriptions. They should link their experience with payment workflows (r5) to how they can contribute to solving real-world problems for Stripe's users, potentially referencing Stripe's values like user empathy or maker culture.",
+            "difficulty": 2,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "q16",
+            "requirement_ids": [
+              "r5"
+            ],
+            "category": "company-fit",
+            "prompt": "As a Senior Full-Stack Software Engineer on the Billing & Subscriptions team, you'd be responsible for designing and implementing features that handle the entire lifecycle of payment workflows (r5), from user-facing interfaces to backend processing. Can you describe a complex payment workflow problem you've tackled in a previous full-stack capacity, detailing the technical challenges you faced on both the front-end and back-end, and how you ensured a robust and reliable solution?",
+            "answer_outline": "The candidate should provide a detailed example using the STAR method, focusing on a complex problem within payment workflows (r5). They should clearly articulate the specific technical challenges encountered on both the front-end (e.g., user experience, data validation) and back-end (e.g., transaction processing, idempotency, error handling, API design). The answer should demonstrate their ability to design and implement a comprehensive, reliable, and scalable full-stack solution.",
+            "difficulty": 3,
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          }
+        ],
+        "flashcards": [
+          {
+            "id": "f1",
+            "front": "Describe a significant technical challenge you've faced and how you resolved it.",
+            "back": "I encountered a performance bottleneck in our legacy system due to inefficient database queries and unoptimized code paths. I refactored critical queries, introduced caching mechanisms, and implemented better logging, resulting in a 50% reduction in response times.",
+            "requirement_ids": [
+              "r1"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f2",
+            "front": "Explain the ACID properties in the context of SQL transactions.",
+            "back": "ACID stands for Atomicity, Consistency, Isolation, and Durability. Atomicity ensures all operations in a transaction either complete or none do; Consistency ensures the database remains in a valid state; Isolation ensures concurrent transactions don't interfere; and Durability ensures committed changes are permanent.",
+            "requirement_ids": [
+              "r2"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f3",
+            "front": "What is the purpose of database indexing, and when might it be detrimental?",
+            "back": "Database indexing improves the speed of data retrieval operations by providing quick lookup access to rows based on column values. However, indexes consume storage space and can slow down data modification operations (INSERT, UPDATE, DELETE) as the index also needs to be updated.",
+            "requirement_ids": [
+              "r2"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f4",
+            "front": "Describe a scenario where an explicit SQL transaction is crucial.",
+            "back": "An explicit SQL transaction is crucial in scenarios requiring multiple related database operations to succeed or fail as a single unit, such as transferring funds between bank accounts. If one step fails, the entire transaction must be rolled back to maintain data integrity.",
+            "requirement_ids": [
+              "r2"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f5",
+            "front": "What are the key principles of RESTful API design?",
+            "back": "Key principles include client-server architecture, statelessness, cacheability, a uniform interface (e.g., using standard HTTP methods like GET, POST, PUT, DELETE), and layered system. Resources are identified by URIs and manipulated using these standard operations.",
+            "requirement_ids": [
+              "r3"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f6",
+            "front": "What are the primary advantages of using GraphQL over REST for an API?",
+            "back": "GraphQL allows clients to request exactly the data they need, preventing over-fetching or under-fetching. It enables a single endpoint for multiple data requests and simplifies API evolution without versioning, offering more flexibility for clients.",
+            "requirement_ids": [
+              "r3"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f7",
+            "front": "When might you choose REST over GraphQL for an API?",
+            "back": "REST might be preferred for simpler APIs with well-defined resources and operations, where caching at the HTTP level is highly beneficial, or when strict adherence to HTTP standards and widespread tooling support are priorities. It can also be simpler to implement for basic CRUD operations.",
+            "requirement_ids": [
+              "r3"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f8",
+            "front": "Name and briefly describe two common types of automated tests.",
+            "back": "Unit tests verify individual components or functions in isolation, ensuring they work as expected. Integration tests verify that different modules or services interact correctly when combined, checking the flow between them.",
+            "requirement_ids": [
+              "r4"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f9",
+            "front": "What are the main benefits of implementing automated testing in a software project?",
+            "back": "Automated testing improves software quality by catching bugs early, reduces manual testing effort and costs, and provides faster feedback on code changes. It also increases confidence in deployments and facilitates refactoring.",
+            "requirement_ids": [
+              "r4"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f10",
+            "front": "What are common challenges in designing secure payment workflows?",
+            "back": "Common challenges include protecting sensitive financial data, ensuring PCI DSS compliance, handling various payment methods, managing transaction idempotency, and mitigating fraud risks. Robust error handling and reconciliation processes are also critical.",
+            "requirement_ids": [
+              "r5"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f11",
+            "front": "What is Apache Kafka primarily used for?",
+            "back": "Apache Kafka is a distributed streaming platform designed for building real-time data pipelines and streaming applications. It's used for publishing, subscribing to, storing, and processing streams of records reliably and at scale.",
+            "requirement_ids": [
+              "r6"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          },
+          {
+            "id": "f12",
+            "front": "How can Redis be effectively used for caching in an application?",
+            "back": "Redis can be used as an in-memory data store to cache frequently accessed data, reducing database load and improving response times. Common strategies include cache-aside, write-through, and write-back, often with time-to-live (TTL) settings for cache invalidation.",
+            "requirement_ids": [
+              "r7"
+            ],
+            "origin": "generated",
+            "pinned": false,
+            "rev": 0
+          }
+        ],
+        "schedule": {
+          "days_available": 3,
+          "days": [
+            {
+              "day": 1,
+              "focus": "deep knowledge of SQL transactions and indexing, REST/GraphQL API design, automated testing",
+              "question_ids": [
+                "q12",
+                "q2",
+                "q10",
+                "q6",
+                "q16",
+                "q5"
+              ],
+              "minutes": 90
+            },
+            {
+              "day": 2,
+              "focus": "REST/GraphQL API design, deep knowledge of SQL transactions and indexing, automated testing",
+              "question_ids": [
+                "q13",
+                "q7",
+                "q11",
+                "q8",
+                "q4"
+              ],
+              "minutes": 90
+            },
+            {
+              "day": 3,
+              "focus": "deep knowledge of SQL transactions and indexing, REST/GraphQL API design, automated testing",
+              "question_ids": [
+                "q14",
+                "q1",
+                "q3",
+                "q9",
+                "q15"
+              ],
+              "minutes": 90
+            }
+          ]
+        },
+        "coverage": {
+          "uncovered_requirement_ids": [],
+          "passes": 1
+        },
+        "warnings": [
+          {
+            "step": "extractRequirements",
+            "source": null,
+            "reason": "the job description was thin (399 characters, 7 requirements extracted); this kit is correspondingly thin"
+          }
+        ]
+      },
+      "error": null
+    }
+  ]
+}

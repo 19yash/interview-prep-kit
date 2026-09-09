@@ -1,0 +1,14 @@
+[
+  {
+    "id": "case-01",
+    "jd": "Senior Backend Engineer\n\nWe are looking for an engineer with 5+ years of Node.js experience to own our routing service. You will mentor two junior engineers. Required: strong PostgreSQL, experience with message queues. Nice to have: freight or logistics domain knowledge, Terraform.",
+    "company_url": "https://gitlab.com/",
+    "days": 5
+  },
+  {
+    "id": "case-02",
+    "jd": "Frontend dev wanted.\nMust know React.",
+    "company_url": "https://example.com/",
+    "days": 1
+  }
+]

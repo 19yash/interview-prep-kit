@@ -16,7 +16,7 @@ The application takes a pasted job description, a target company's website addre
 | **Core Shared** | `@ipk/core` (npm workspace) | Single source of truth for schemas (Zod), deterministic algorithms, crawler, and pipeline runner shared by API and CLI. |
 | **LLM Provider** | Google Gemini (`gemini-3.6-flash`) | Native JSON schema enforcement (`responseSchema`), free-tier availability, and search grounding. |
 | **Scraping** | `undici` + `cheerio` + `robots-parser` | Lightweight HTML parsing and link extraction respecting `robots.txt` without heavy browser engine overhead. |
-| **Testing** | Vitest | Fast unified test runner across all monorepo workspaces (343 tests across 30 files). |
+| **Testing** | Vitest | Fast unified test runner across all monorepo workspaces (353 tests across 31 files). |
 
 ---
 
@@ -233,7 +233,7 @@ Implemented in `packages/core/src/schedule/allocate.ts`:
 
 ## 11. Testing & Verification
 
-The suite contains **343 automated tests across 30 test files** covering all core invariants:
+The suite contains **353 automated tests across 31 test files** covering all core invariants:
 
 ```bash
 # Run all workspace tests

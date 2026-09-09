@@ -35,3 +35,17 @@ export const env = EnvSchema.parse({
 })
 
 export const isProduction = env.NODE_ENV === 'production'
+
+/**
+ * A single origin cannot cover production and a preview deployment, so this
+ * accepts a comma-separated list. Trailing slashes are stripped because the
+ * Origin header never carries one and a mismatch is invisible in logs.
+ */
+export function parseOrigins(value: string): string[] {
+  return value
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
+    .filter((origin) => origin.length > 0)
+}
+
+export const allowedOrigins = parseOrigins(env.WEB_ORIGIN)

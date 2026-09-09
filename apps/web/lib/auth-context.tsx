@@ -49,6 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    function onSignedOut() {
+      setUser(null)
+      setStatus('signedOut')
+      router.push('/login')
+    }
+    window.addEventListener('ipk:signed-out', onSignedOut)
+    return () => window.removeEventListener('ipk:signed-out', onSignedOut)
+  }, [router])
+
   const run = useCallback(
     async (action: () => Promise<User>) => {
       setError(null)

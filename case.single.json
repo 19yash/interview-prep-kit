@@ -1,0 +1,8 @@
+[
+  {
+    "id": "stripe-billing-dev",
+    "jd": "Stripe — Full-Stack Software Engineer (Billing & Subscriptions)\n\nIn this role, you will build customer-facing dashboards in React/TypeScript and distributed backend services in Node.js/PostgreSQL. Required: 4+ years experience, deep knowledge of SQL transactions and indexing, REST/GraphQL API design, and automated testing. Nice to have: experience with payment workflows, Kafka, and Redis caching.",
+    "company_url": "https://stripe.com/",
+    "days": 3
+  }
+]

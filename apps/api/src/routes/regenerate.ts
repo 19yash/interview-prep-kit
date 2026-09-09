@@ -5,6 +5,7 @@ import {
   createGeminiClient,
   EMPTY_HIRING_SIGNALS,
   EMPTY_PUBLIC_DISCUSSION,
+  generateFlashcards,
   generateQuestionsForCategory,
   mergeRegenerated,
   nextIdAfter,
@@ -17,6 +18,7 @@ import {
   type SectionKey,
 } from '@ipk/core'
 import { Router } from 'express'
+import { env } from '../env.js'
 import { getTestLlm } from '../jobs/queue.js'
 import { requireAuth } from '../middleware/auth.js'
 import { HttpError } from '../middleware/errors.js'
@@ -62,7 +64,7 @@ regenerateRouter.post('/:id/regenerate/:section', async (req, res, next) => {
     await doc.save()
 
     const kit = structuredClone(doc.kit) as Kit
-    const llm = getTestLlm() ?? createGeminiClient()
+    const llm = getTestLlm() ?? createGeminiClient({ apiKey: env.GEMINI_API_KEY || undefined })
 
     try {
       if (section === 'schedule') {
@@ -82,6 +84,15 @@ regenerateRouter.post('/:id/regenerate/:section', async (req, res, next) => {
           publicDiscussion: EMPTY_PUBLIC_DISCUSSION,
           llm,
         })
+      } else if (section === 'flashcards') {
+        const { keep } = partitionForRegeneration(kit.flashcards)
+        const generated = await generateFlashcards({
+          requirements: kit.role.requirements,
+          questions: kit.questions,
+          nextId: nextIdAfter('f', kit.flashcards),
+          llm,
+        })
+        kit.flashcards = mergeRegenerated(keep, generated.flashcards)
       } else {
         const category = categoryOf(section)
         if (!category) throw new HttpError(400, 'INVALID_INPUT', 'that section cannot be regenerated on its own')

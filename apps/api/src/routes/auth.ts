@@ -36,7 +36,7 @@ authRouter.post('/login', async (req, res, next) => {
   try {
     const parsed = Credentials.safeParse(req.body)
     // Same message whether the email is unknown or the password is wrong.
-    const rejection = new HttpError(401, 'BAD_CREDENTIALS', 'those details do not match an account')
+    const rejection = new HttpError(401, 'BAD_CREDENTIALS', 'Invalid Credentials')
     if (!parsed.success) throw rejection
 
     const user = await UserModel.findOne({ email: parsed.data.email.toLowerCase() })

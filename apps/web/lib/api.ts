@@ -53,6 +53,9 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const error = (body as { error?: { code?: string; message?: string } }).error
+    if (response.status === 401 && path !== '/api/auth/me') {
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('ipk:signed-out'))
+    }
     throw new ApiError(response.status, error?.code ?? 'UNKNOWN', error?.message ?? 'something went wrong')
   }
 

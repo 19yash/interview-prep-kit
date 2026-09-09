@@ -287,6 +287,33 @@ describe('regeneration', () => {
     expect(after.kit.questions.map((q: { id: string }) => q.id)).toEqual(before.kit.questions.map((q: { id: string }) => q.id))
   })
 
+  it('regenerates flashcards while preserving edited flashcards', async () => {
+    const before = await read()
+    const targetCard = before.kit.flashcards[0]
+    await agent.patch(`/api/kits/${kitId}/flashcards/${targetCard.id}`).send({ front: 'My custom front' })
+
+    setTestLlm(
+      createStubClient({
+        grounded: { text: '', sources: [] },
+        json: (call) => {
+          if (call.prompt.includes('Write flashcards')) {
+            return { flashcards: [{ front: 'Newly regenerated front', back: 'New back', requirement_ids: ['r1'] }] }
+          }
+          return {}
+        },
+      }),
+    )
+
+    const response = await agent.post(`/api/kits/${kitId}/regenerate/flashcards`)
+    expect(response.status).toBe(200)
+    const after = await read()
+    const survivor = after.kit.flashcards.find((f: { id: string }) => f.id === targetCard.id)
+    expect(survivor).toBeDefined()
+    expect(survivor.front).toBe('My custom front')
+    expect(survivor.origin).toBe('edited')
+    expect(after.kit.flashcards.some((f: { front: string }) => f.front === 'Newly regenerated front')).toBe(true)
+  })
+
   it('recomputes coverage after a regeneration', async () => {
     setTestLlm(llmWith([]))
     await agent.post(`/api/kits/${kitId}/regenerate/questions_technical`)

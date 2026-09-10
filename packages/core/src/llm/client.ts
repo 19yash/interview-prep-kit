@@ -47,14 +47,16 @@ export type GeminiOptions = {
   model?: string
   maxAttempts?: number
   tokensPerMinute?: number
+  requestsPerMinute?: number
   sleep?: (ms: number) => Promise<void>
   /** Injected in tests so no network call is made. */
   generate?: RawGenerate
 }
 
-const DEFAULT_MODEL = 'gemini-3.5-flash'
+const DEFAULT_MODEL = 'gemini-3.6-flash'
 const DEFAULT_MAX_ATTEMPTS = 3
 const DEFAULT_TPM = 200_000
+const DEFAULT_RPM = 15
 
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -89,13 +91,16 @@ function isRetryableStatus(status: number | undefined): boolean {
   return status === 429 || status === 500 || status === 502 || status === 503 || status === 504
 }
 
-/** Honour an explicit retry delay if the provider sent one, else back off (capped at 15s). */
+/** Honour an explicit retry delay if the provider sent one, else back off (capped at 60s). */
 function backoffMs(error: unknown, attempt: number): number {
   const message = error instanceof Error ? error.message : ''
-  const seconds = message.match(/retry(?:-|\s)?(?:delay|after)["':\s]+(\d+)/i)
-  if (seconds?.[1]) return Math.min(Number(seconds[1]) * 1000, 15_000)
-  const base = 1000 * 2 ** (attempt - 1)
-  return Math.min(base + Math.floor(Math.random() * 400), 15_000)
+  const secondsMatch = message.match(/retry(?:-|\s)?(?:delay|after|in)["':\s]+(\d+(?:\.\d+)?)/i)
+  if (secondsMatch?.[1]) {
+    const seconds = Math.ceil(Number(secondsMatch[1]))
+    return Math.min(seconds * 1000 + 500, 60_000)
+  }
+  const base = 2000 * 2 ** (attempt - 1)
+  return Math.min(base + Math.floor(Math.random() * 400), 60_000)
 }
 
 /** Models sometimes fence JSON despite being told not to. Cheap to tolerate. */
@@ -121,6 +126,13 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
       : opts.apiKey
         ? new GeminiKeyPool([opts.apiKey])
         : GeminiKeyPool.fromEnv())
+
+  const baseRpm = opts.requestsPerMinute ?? (opts.generate ? 100_000 : DEFAULT_RPM)
+  const effectiveRpm = baseRpm * Math.max(1, keyPool.size)
+  const requestBucket = new TokenBucket({
+    capacity: effectiveRpm,
+    refillPerMs: effectiveRpm / 60_000,
+  })
 
   const generate: RawGenerate =
     opts.generate ??
@@ -184,6 +196,7 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
       let keySwitched = false
 
       for (let n = 1; n <= maxAttempts; n += 1) {
+        await requestBucket.take(1)
         await bucket.take(2000)
         try {
           const result = await run(n, note, currentKey)
@@ -218,6 +231,14 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
           if (!isRetryableStatus(status)) {
             if (error instanceof LlmError) throw error
             throw new LlmError('PROVIDER', `provider error: ${String(error)}`, n)
+          }
+
+          if (status === 429 && keyPool.size > 1) {
+            const next = keyPool.rotate()
+            if (next && !triedKeys.has(next)) {
+              keySwitched = true
+              break
+            }
           }
 
           if (n === maxAttempts) {

@@ -23,6 +23,20 @@ function llmWith(technicalPrompts: string[]): LlmClient {
           ],
         }
       }
+      if (call.prompt.includes('Category: all')) {
+        return {
+          questions: [
+            ...technicalPrompts.map((prompt) => ({
+              requirement_ids: ['r1'],
+              category: 'technical',
+              prompt,
+              answer_outline: 'outline',
+              difficulty: 2,
+            })),
+            { requirement_ids: ['r2'], category: 'behavioural', prompt: 'Mentoring story?', answer_outline: '', difficulty: 2 },
+          ],
+        }
+      }
       if (call.prompt.includes('Category: technical')) {
         return {
           questions: technicalPrompts.map((prompt) => ({

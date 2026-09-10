@@ -131,6 +131,48 @@ describe('generateJson', () => {
       code: 'RATE_LIMITED',
     })
   })
+
+  it('immediately rotates to next available key on 429 rate limit when multiple keys exist', async () => {
+    const keysUsed: string[] = []
+    const c = createGeminiClient({
+      apiKeys: ['keyA', 'keyB'],
+      sleep: async () => {},
+      generate: async ({ apiKey }) => {
+        keysUsed.push(apiKey ?? '')
+        if (apiKey === 'keyA') {
+          throw Object.assign(new Error('Quota exceeded for metric GenerateContentRequestsPerMinute. Please retry in 20s.'), {
+            status: 429,
+          })
+        }
+        return { text: '{"value":"from-keyB"}' }
+      },
+    } as never)
+
+    const result = await c.generateJson(call, parse)
+    expect(result).toEqual({ value: 'from-keyB' })
+    expect(keysUsed).toEqual(['keyA', 'keyB'])
+  })
+
+  it('parses retry delay from 429 message and backs off accordingly', async () => {
+    let sleptMs = 0
+    const sleep = vi.fn(async (ms: number) => {
+      sleptMs = ms
+    })
+    const c = client(
+      async (n) => {
+        if (n === 1) {
+          throw Object.assign(new Error('Resource exhausted. Please retry in 18.5s.'), { status: 429 })
+        }
+        return { text: '{"value":"retried"}' }
+      },
+      { sleep },
+    )
+    const result = await c.generateJson(call, parse)
+    expect(result).toEqual({ value: 'retried' })
+    expect(sleep).toHaveBeenCalled()
+    // 19s + 500ms safety buffer = 19500ms
+    expect(sleptMs).toBe(19500)
+  })
 })
 
 describe('createStubClient', () => {

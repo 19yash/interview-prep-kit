@@ -168,35 +168,39 @@ describe('generateQuestionsForCategory', () => {
 })
 
 describe('generateAllQuestions', () => {
-  it('makes one call per populated category and never reuses an id', async () => {
-    const seenCategories: string[] = []
-    let counter = 0
+  it('makes a single call across all categories and never reuses an id', async () => {
+    let callCount = 0
+    let seenPrompt = ''
     const llm = createStubClient({
       json: (call) => {
-        const match = call.prompt.match(/Category: ([a-z-]+)/)
-        seenCategories.push(match?.[1] ?? 'unknown')
-        counter += 1
-        return { questions: [{ requirement_ids: ['r1'], prompt: `q${counter}`, answer_outline: '', difficulty: 2 }] }
+        callCount += 1
+        seenPrompt = call.prompt
+        return {
+          questions: [
+            { requirement_ids: ['r1'], category: 'technical', prompt: 'Tech q', answer_outline: '', difficulty: 2 },
+            { requirement_ids: ['r2'], category: 'behavioural', prompt: 'Beh q', answer_outline: '', difficulty: 2 },
+          ],
+        }
       },
     })
     const { questions } = await generateAllQuestions({ ...base, requirements, nextId: createIdFactory('q'), llm })
-    // technical and behavioural/domain groups are called
-    expect(new Set(seenCategories).size).toBe(2)
-    expect(new Set(questions.map((q) => q.id)).size).toBe(questions.length)
+    expect(callCount).toBe(1)
+    expect(seenPrompt).toContain('Category: all')
+    expect(questions).toHaveLength(2)
+    expect(new Set(questions.map((q) => q.id)).size).toBe(2)
+    expect(questions.map((q) => q.category)).toEqual(['technical', 'behavioural'])
   })
 
-  it('records a warning and keeps the other categories when one category fails', async () => {
-    let n = 0
+  it('records a warning and returns an empty list when the call fails', async () => {
     const llm = createStubClient({
       json: () => {
-        n += 1
-        if (n === 1) throw new Error('category blew up')
-        return { questions: [{ requirement_ids: ['r1'], prompt: 'ok', answer_outline: '', difficulty: 1 }] }
+        throw new Error('LLM call failed')
       },
     })
     const { questions, warnings } = await generateAllQuestions({ ...base, requirements, nextId: createIdFactory('q'), llm })
-    expect(warnings.length).toBeGreaterThan(0)
-    expect(questions.length).toBeGreaterThan(0)
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]?.step).toBe('generateQuestions')
+    expect(questions).toEqual([])
   })
 
   it('produces nothing but no error when there are no requirements at all', async () => {

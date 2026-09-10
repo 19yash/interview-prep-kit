@@ -40,11 +40,20 @@ function scriptedLlm(overrides: { requirements?: unknown; questionsEmpty?: boole
       }
       if (prompt.includes('Category:')) {
         if (overrides.questionsEmpty) return { questions: [] }
+        if (prompt.includes('Category: all')) {
+          return {
+            questions: [
+              { requirement_ids: ['r1'], category: 'technical', prompt: 'Explain the event loop.', answer_outline: 'outline', difficulty: 2 },
+              { requirement_ids: ['r2'], category: 'behavioural', prompt: 'Tell me about mentoring someone.', answer_outline: 'outline', difficulty: 2 },
+            ],
+          }
+        }
         const forBehavioural = prompt.includes('Category: behavioural')
         return {
           questions: [
             {
               requirement_ids: [forBehavioural ? 'r2' : 'r1'],
+              category: forBehavioural ? 'behavioural' : 'technical',
               prompt: forBehavioural ? 'Tell me about mentoring someone.' : 'Explain the event loop.',
               answer_outline: 'outline',
               difficulty: 2,
@@ -142,12 +151,16 @@ describe('runPipeline', () => {
             ],
           }
         }
-        if (call.prompt.includes('Category: behavioural')) {
+        if (call.prompt.includes('Requirements with no question against them yet:')) {
           sawGapCall = true
           return { questions: [{ requirement_ids: ['r2'], prompt: 'Mentoring story?', answer_outline: '', difficulty: 2 }] }
         }
-        if (call.prompt.includes('Category: technical')) {
-          return { questions: [{ requirement_ids: ['r1'], prompt: 'Event loop?', answer_outline: '', difficulty: 2 }] }
+        if (call.prompt.includes('Category: all') || call.prompt.includes('Category: technical')) {
+          return { questions: [{ requirement_ids: ['r1'], category: 'technical', prompt: 'Event loop?', answer_outline: '', difficulty: 2 }] }
+        }
+        if (call.prompt.includes('Category: behavioural')) {
+          sawGapCall = true
+          return { questions: [{ requirement_ids: ['r2'], prompt: 'Mentoring story?', answer_outline: '', difficulty: 2 }] }
         }
         if (call.prompt.includes('Category:')) return { questions: [] }
         if (call.prompt.includes('Write flashcards')) return { flashcards: [] }

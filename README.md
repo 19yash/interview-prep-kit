@@ -14,9 +14,29 @@ The application takes a pasted job description, a target company's website addre
 | **Backend** | Node.js, Express, TypeScript | Long-lived process suited for multi-step background pipeline jobs without serverless execution timeouts. |
 | **Database** | MongoDB & Mongoose | Flexible document model matching the nested, versioned preparation kit schema and practice attempts. |
 | **Core Shared** | `@ipk/core` (npm workspace) | Single source of truth for schemas (Zod), deterministic algorithms, crawler, and pipeline runner shared by API and CLI. |
-| **LLM Provider** | Google Gemini (`gemini-3.5-flash`) | Native JSON schema enforcement (`responseSchema`), free-tier availability, and search grounding. |
+| **LLM Provider** | Google Gemini (`gemini-3.6-flash`) | Native JSON schema enforcement (`responseSchema`), free-tier availability, and search grounding. |
 | **Scraping** | `undici` + `cheerio` + `robots-parser` | Lightweight HTML parsing and link extraction respecting `robots.txt` without heavy browser engine overhead. |
-| **Testing** | Vitest | Fast unified test runner across all monorepo workspaces (353 tests across 31 files). |
+| **Testing** | Vitest | Fast unified test runner across all monorepo workspaces (376 tests across 33 files). |
+
+### Why a Monorepo Architecture?
+
+This project is organized as an **npm workspaces monorepo** with three focused packages:
+- `packages/core` (`@ipk/core`): Shared library containing the complete research and generation pipeline, HTML crawler, Zod schemas, LLM client with multi-key pool, rate limiter, and deterministic algorithms.
+- `apps/api` (`@ipk/api`): Long-lived Express HTTP backend managing MongoDB persistence, user authentication, and asynchronous job execution.
+- `apps/web` (`@ipk/web`): Next.js 15 frontend providing the responsive kit builder, inline editing, and 3D flashcard practice mode.
+
+**Key Engineering Rationale:**
+1. **Dual Entry Points (Web App & Standalone CLI Evaluator)**:
+   - The technical specification requires both a full-stack web application (with database and authentication) and an isolated CLI evaluation runner (`scripts/evaluate.ts` / `npm run evaluate`) that runs batch jobs with zero database dependencies.
+   - Packaging core functionality into `@ipk/core` allows both the Express background worker and the CLI evaluation script to invoke the *exact same* pipeline, crawler, and schema validators without code duplication or drift.
+2. **End-to-End Type Safety & Canonical Schema**:
+   - All kit data models (Appendix A compliance, `Kit`, `Question`, `Flashcard`, `Role`, `Requirement`) are authored in `@ipk/core` with Zod.
+   - The backend MongoDB models, Express route handlers, and Next.js React components import these types directly. Any schema change is checked at compile time across the whole stack with zero manual API synchronization.
+3. **Atomic Multi-Layer Evolution**:
+   - Features spanning multiple layers (such as multi-key pool failover, practice mode requirement confidence stats, and single-call question generation) can be developed, tested, and versioned in single atomic git commits without managing independent package release lifecycles.
+4. **Unified Tooling & High-Speed Verification**:
+   - A single root command (`npm test`) executes all **376 tests across 33 test files** with Vitest in ~5 seconds.
+   - Shared TypeScript configurations and centralized dependency management eliminate version mismatch overhead across workspaces.
 
 ---
 
@@ -48,7 +68,7 @@ npm run dev:web    # Next.js web app on http://localhost:3000
 |---|---|---|
 | `GEMINI_API_KEY` | `@ipk/core`, API, CLI | Google AI Studio API key for generation steps. Comma-separated keys also supported. |
 | `GEMINI_API_KEYS` | `@ipk/core`, API, CLI | Multi-key pool: comma-separated Gemini keys with automatic failover on daily quota exhaustion. |
-| `GEMINI_MODEL` | `@ipk/core` | Model identifier (defaults to `gemini-3.5-flash`). |
+| `GEMINI_MODEL` | `@ipk/core` | Model identifier (defaults to `gemini-3.6-flash`). |
 | `MONGODB_URI` | API | MongoDB connection string (e.g. `mongodb://127.0.0.1:27017/ipk`). |
 | `PORT` | API | Port Express listens on (default `4000`). |
 | `JWT_SECRET` | API | Secret for signing session cookies (`openssl rand -hex 32`). |
@@ -133,7 +153,7 @@ The pipeline executes as a strictly sequenced directed acyclic graph:
                                │
                       [6. buildCompanyBrief] (company summary, hiring notes, sources)
                                │
-                      [7. generateQuestions] (1 prompt per category: tech, behav, etc.)
+                      [7. generateQuestions] (unified single LLM call across all categories)
                                │
                       [8. checkCoverage] (pure code: set difference)
                                │
@@ -151,7 +171,7 @@ The pipeline executes as a strictly sequenced directed acyclic graph:
 ### Why Ordering Matters
 1. **Extraction First**: Role requirements establish the ground truth (`r1..rN`) used by all subsequent generation and verification steps.
 2. **Research Precedes Questions**: Real hiring process data (e.g. a known take-home assessment or system design round) directly informs the categories and tone of questions.
-3. **Categories Run Independently**: Generating technical, behavioral, and role-specific questions in isolated prompt calls prevents instructions from bleeding across categories.
+3. **Unified Multi-Category Generation with Scoped Regeneration**: Initial kit generation executes a single unified LLM call covering all categories (technical, behavioural, system-design, company-fit) and all requirements. This prevents rate-limit exhaustion, eliminates multi-round latency, and ensures holistic requirement distribution. However, individual section regeneration remains isolated via `generateQuestionsForCategory` to preserve user edits in untouched categories.
 4. **Coverage Before Schedule**: The schedule can only distribute questions once the final question set (including gap-filling questions) is complete.
 5. **Two Passes Maximum**: If a requirement remains uncovered after a targeted second pass naming it explicitly, it is typically ambiguous or degenerate text. Continuing to burn token budget in loops is avoided; the gap is reported honestly in `coverage.uncovered_requirement_ids`.
 
@@ -210,6 +230,9 @@ Implemented in `packages/core/src/schedule/allocate.ts`:
 - **Server-Driven Queue Ordering**:
   - Order: **Unseen cards** $\rightarrow$ **Lowest confidence** $\rightarrow$ **Least recently seen**.
   - **Why not SM-2 Spaced Repetition?** Spaced repetition algorithms (e.g. Anki/SM-2) optimize memory retention over months. Candidates using this kit have deadlines measured in days. Scheduling shaky cards for days after the interview is counter-productive.
+- **Session Completion & Requirement Confidence Breakdown**:
+  - Upon completing all cards in a session, users receive a detailed breakdown of their confidence scores mapped directly against the job's actual requirements.
+  - Users can review weak areas and immediately choose between re-starting practice (prioritizing low-confidence cards) or navigating back to the Kit Builder.
 
 ---
 
@@ -222,10 +245,11 @@ Implemented in `packages/core/src/schedule/allocate.ts`:
 | **No Hiring Page Found** | Recorded honestly in `warnings[]`; questions fall back to JD requirements; no fabricated stages. |
 | **Thin Job Description** | Generates minimal requirements, flags kit with `thin: true` warning; never invents requirements. |
 | **Invalid Model JSON** | Automatically repaired using JSON parse feedback; fails gracefully into isolated warning if unrecoverable. |
-| **Rate Limiting** | Exponential backoff with jitter and token bucket limiter; degrades gracefully rather than failing the run. |
+| **Rate Limiting & Daily Quota** | Proactive TokenBucket request pacing (15 RPM), exponential backoff with provider retry-in parsing (capped at 60s), and `GeminiKeyPool` automatic key rotation across multiple `GEMINI_API_KEYS`. |
 | **Duplicate Submission** | Deduplicated via `sha256(userId + jd + companyUrl)` unique index, returning the existing in-progress job. |
 
-### Security Measures
+### Security & Quota Measures
+- **Multi-Key Quota Resilience**: `GeminiKeyPool` automatically tracks key status, marks exhausted keys on daily limits (`PerDay`), and fails over to backup keys seamlessly without interrupting pipeline runs.
 - **SSRF Prevention**: In `production`, URLs resolving to private, loopback, link-local, carrier-grade NAT, or cloud metadata IP ranges (`169.254.169.254`) are blocked.
 - **Prompt Injection Defense**: All crawled text and pasted descriptions are wrapped in strict delimiters and declared as untrusted data in system instructions.
 - **Session Security**: Session tokens are stored in `httpOnly`, `secure`, `sameSite: none` cookies. Cross-user data access returns `404 Not Found` (rather than `403 Forbidden`) to prevent resource enumeration.
@@ -234,7 +258,7 @@ Implemented in `packages/core/src/schedule/allocate.ts`:
 
 ## 11. Testing & Verification
 
-The suite contains **353 automated tests across 31 test files** covering all core invariants:
+The suite contains **376 automated tests across 33 test files** covering all core invariants:
 
 ```bash
 # Run all workspace tests
@@ -245,11 +269,14 @@ npm run typecheck
 npx tsc --noEmit -p apps/web
 ```
 
+- `packages/core/test/llm.key-pool.test.ts`: Multi-key pool rotation, daily quota exhaustion failover, cooldown reset, and pool diagnostics.
+- `packages/core/test/llm.client.test.ts`: Proactive rate limiting (15 RPM), retry-in delay parsing, 429 failover, and JSON repair.
 - `packages/core/test/schedule.allocate.test.ts`: Exact day count, round-robin, must-have inclusion, integer minutes.
 - `packages/core/test/coverage.check.test.ts`: Deterministic coverage set arithmetic, gap detection.
 - `packages/core/test/schema.kit.test.ts`: Zod validation of Appendix A schema.
 - `packages/core/test/fetch.url-guard.test.ts`: SSRF protection and IP range filtering.
 - `apps/api/test/builder.test.ts`: CRUD, question reordering, flashcard mutations, and section regeneration.
+- `apps/web/test/session-summary.test.tsx`: Practice session completion screen and requirement confidence statistics.
 - `apps/web/test/use-practice.test.ts`: Practice session state, keyboard shortcuts, and queue advancement.
 
 ---

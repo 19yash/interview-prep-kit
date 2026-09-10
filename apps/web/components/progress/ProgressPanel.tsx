@@ -12,7 +12,7 @@ export const STEP_LABELS: Record<string, string> = {
   findHiringProcess: 'Looking for how they hire',
   searchPublicDiscussion: 'Searching public accounts of their process',
   buildCompanyBrief: 'Writing the company brief',
-  generateQuestions: 'Writing questions, one category at a time',
+  generateQuestions: 'Generating tailored interview questions',
   generateFlashcards: 'Writing flashcards',
   checkCoverage: 'Checking every requirement has a question',
   fillGaps: 'Filling the gaps found by the check',

@@ -1,4 +1,4 @@
-import type { Flashcard } from './types'
+import type { Flashcard, Requirement } from './types'
 
 export type Attempt = { cardId: string; confidence: number; seenAt: string }
 
@@ -72,4 +72,89 @@ export function practiceStats(cards: Flashcard[], attempts: Attempt[]): Practice
     .map(({ card, confidence }) => ({ card, confidence }))
 
   return { total: cards.length, seen, unseen: cards.length - seen, low, medium, high, weakest, lastSeenAt }
+}
+
+export type RequirementConfidenceStatus = 'confident' | 'shaky' | 'needs-practice' | 'untested'
+
+export type RequirementConfidence = {
+  requirement: Requirement
+  score: number | null // average 1.0 to 3.0, or null if untested
+  status: RequirementConfidenceStatus
+  totalCards: number
+  ratedCards: number
+  cards: { card: Flashcard; confidence?: number }[]
+}
+
+export function requirementConfidence(
+  requirements: Requirement[],
+  cards: Flashcard[],
+  attempts: Attempt[],
+  sessionRatings?: Map<string, 1 | 2 | 3>,
+): RequirementConfidence[] {
+  const latest = latestByCard(attempts)
+
+  const list: RequirementConfidence[] = requirements.map((requirement) => {
+    const matchedCards = cards.filter((c) => c.requirement_ids?.includes(requirement.id))
+
+    const cardRatings = matchedCards.map((card) => {
+      const sessionRating = sessionRatings?.get(card.id)
+      const persistedRating = latest.get(card.id)?.confidence
+      const confidence = sessionRating ?? persistedRating
+      return { card, confidence }
+    })
+
+    const rated = cardRatings.filter(
+      (item): item is { card: Flashcard; confidence: number } => item.confidence !== undefined,
+    )
+
+    if (rated.length === 0) {
+      return {
+        requirement,
+        score: null,
+        status: 'untested' as const,
+        totalCards: matchedCards.length,
+        ratedCards: 0,
+        cards: cardRatings,
+      }
+    }
+
+    const sum = rated.reduce((acc, curr) => acc + curr.confidence, 0)
+    const rawAvg = sum / rated.length
+    const score = Math.round(rawAvg * 10) / 10
+
+    let status: RequirementConfidenceStatus
+    if (score >= 2.5) {
+      status = 'confident'
+    } else if (score >= 1.7) {
+      status = 'shaky'
+    } else {
+      status = 'needs-practice'
+    }
+
+    return {
+      requirement,
+      score,
+      status,
+      totalCards: matchedCards.length,
+      ratedCards: rated.length,
+      cards: cardRatings,
+    }
+  })
+
+  // Sort: needs-practice first, then shaky, then untested, then confident.
+  // Within the same status group: must-have before nice-to-have.
+  const STATUS_PRIORITY: Record<RequirementConfidenceStatus, number> = {
+    'needs-practice': 0,
+    shaky: 1,
+    untested: 2,
+    confident: 3,
+  }
+
+  return list.sort((a, b) => {
+    const diffStatus = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status]
+    if (diffStatus !== 0) return diffStatus
+    const aMust = a.requirement.priority === 'must' ? 0 : 1
+    const bMust = b.requirement.priority === 'must' ? 0 : 1
+    return aMust - bMust
+  })
 }

@@ -151,37 +151,64 @@ export async function generateQuestionsForCategory(input: CategoryInput): Promis
 export type AllInput = Omit<CategoryInput, 'category' | 'count'>
 
 /**
- * Step 7. One call per category, sequentially rather than in parallel, because
- * the free tier limits tokens per minute and four simultaneous calls is the
- * fastest way to be told to slow down.
+ * Step 7. Generates questions across categories in 1–2 calls:
+ * - Call 1: Technical (and system design) covering technical requirements
+ * - Call 2: Behavioural and company-fit covering behavioural and domain requirements
+ * This prevents rate-limit exhaustion and 429 backoff delays while ensuring
+ * every requirement is addressed.
  */
 export async function generateAllQuestions(input: AllInput): Promise<{ questions: Question[]; warnings: PipelineWarning[] }> {
   const questions: Question[] = []
   const warnings: PipelineWarning[] = []
 
-  const byCategory = new Map<Category, Requirement[]>()
-  for (const category of QUESTION_CATEGORIES) byCategory.set(category, [])
-  for (const requirement of input.requirements) {
-    byCategory.get(categoryForRequirement(requirement))!.push(requirement)
-  }
-  // System design draws on the technical must-haves as a set, not one requirement.
-  const technicalMusts = input.requirements.filter((r) => r.kind === 'technical' && r.priority === 'must')
-  if (technicalMusts.length > 0) byCategory.set('system-design', technicalMusts)
+  const technicalReqs = input.requirements.filter((r) => r.kind === 'technical')
+  const nonTechnicalReqs = input.requirements.filter((r) => r.kind !== 'technical')
 
-  for (const category of QUESTION_CATEGORIES) {
-    const requirements = byCategory.get(category) ?? []
-    if (requirements.length === 0) continue
+  // Call 1: Technical
+  if (technicalReqs.length > 0) {
     try {
-      const generated = await generateQuestionsForCategory({
+      const techQuestions = await generateQuestionsForCategory({
         ...input,
-        category,
-        requirements,
-        existing: [...input.existing, ...questions],
+        category: 'technical',
+        requirements: technicalReqs,
+        existing: input.existing,
       })
-      questions.push(...generated)
+      const hasSystemDesign = input.role.seniority === 'senior' || input.role.seniority === 'lead' || technicalReqs.length >= 4
+      if (hasSystemDesign && techQuestions.length > 2) {
+        const sysIndex = techQuestions.findIndex((q) => q.difficulty === 3)
+        if (sysIndex !== -1) {
+          techQuestions[sysIndex]!.category = 'system-design'
+        }
+      }
+      questions.push(...techQuestions)
     } catch (error) {
       warnings.push({
-        step: `generateQuestions:${category}`,
+        step: 'generateQuestions:technical',
+        source: null,
+        reason: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  // Call 2: Behavioural & Domain (Company Fit)
+  if (nonTechnicalReqs.length > 0) {
+    try {
+      const nonTechQuestions = await generateQuestionsForCategory({
+        ...input,
+        category: 'behavioural',
+        requirements: [...nonTechnicalReqs, ...technicalReqs],
+        existing: [...input.existing, ...questions],
+      })
+      const domainIds = new Set(nonTechnicalReqs.filter((r) => r.kind === 'domain').map((r) => r.id))
+      for (const q of nonTechQuestions) {
+        if (q.requirement_ids.some((id) => domainIds.has(id))) {
+          q.category = 'company-fit'
+        }
+      }
+      questions.push(...nonTechQuestions)
+    } catch (error) {
+      warnings.push({
+        step: 'generateQuestions:behavioural',
         source: null,
         reason: error instanceof Error ? error.message : String(error),
       })

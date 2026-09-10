@@ -77,6 +77,60 @@ describe('generateJson', () => {
     await expect(c.generateJson(call, parse)).rejects.toBeInstanceOf(LlmError)
     expect(calls).toBe(1)
   })
+
+  it('automatically fails over to next key when a key hits daily quota limit', async () => {
+    const keysUsed: string[] = []
+    const c = createGeminiClient({
+      apiKeys: ['key1', 'key2'],
+      sleep: async () => {},
+      generate: async ({ apiKey }) => {
+        keysUsed.push(apiKey ?? '')
+        if (apiKey === 'key1') {
+          throw Object.assign(new Error('ResourceExhausted: Quota exceeded for metric PerDayPerProject'), {
+            status: 429,
+          })
+        }
+        return { text: '{"value":"from-key2"}' }
+      },
+    } as never)
+
+    const result = await c.generateJson(call, parse)
+    expect(result).toEqual({ value: 'from-key2' })
+    expect(keysUsed).toEqual(['key1', 'key2'])
+  })
+
+  it('fails over to next key when a key is invalid', async () => {
+    const keysUsed: string[] = []
+    const c = createGeminiClient({
+      apiKeys: ['badKey', 'goodKey'],
+      sleep: async () => {},
+      generate: async ({ apiKey }) => {
+        keysUsed.push(apiKey ?? '')
+        if (apiKey === 'badKey') {
+          throw Object.assign(new Error('API_KEY_INVALID: API key not valid'), { status: 400 })
+        }
+        return { text: '{"value":"from-goodKey"}' }
+      },
+    } as never)
+
+    const result = await c.generateJson(call, parse)
+    expect(result).toEqual({ value: 'from-goodKey' })
+    expect(keysUsed).toEqual(['badKey', 'goodKey'])
+  })
+
+  it('throws RATE_LIMITED when all keys in pool exhaust their daily quota', async () => {
+    const c = createGeminiClient({
+      apiKeys: ['keyA', 'keyB'],
+      sleep: async () => {},
+      generate: async () => {
+        throw Object.assign(new Error('ResourceExhausted: PerDay limit exceeded'), { status: 429 })
+      },
+    } as never)
+
+    await expect(c.generateJson(call, parse)).rejects.toMatchObject({
+      code: 'RATE_LIMITED',
+    })
+  })
 })
 
 describe('createStubClient', () => {

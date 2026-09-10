@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import { TokenBucket } from './limiter.js'
+import { GeminiKeyPool } from './key-pool.js'
 
 export type LlmErrorCode = 'RATE_LIMITED' | 'INVALID_JSON' | 'EMPTY' | 'PROVIDER'
 
@@ -36,10 +37,13 @@ type RawGenerate = (args: {
   grounded?: boolean
   temperature?: number
   maxOutputTokens?: number
+  apiKey?: string
 }) => Promise<{ text: string; sources?: string[] }>
 
 export type GeminiOptions = {
   apiKey?: string
+  apiKeys?: string[]
+  keyPool?: GeminiKeyPool
   model?: string
   maxAttempts?: number
   tokensPerMinute?: number
@@ -48,7 +52,7 @@ export type GeminiOptions = {
   generate?: RawGenerate
 }
 
-const DEFAULT_MODEL = 'gemini-2.5-flash'
+const DEFAULT_MODEL = 'gemini-3.5-flash'
 const DEFAULT_MAX_ATTEMPTS = 3
 const DEFAULT_TPM = 200_000
 
@@ -64,17 +68,34 @@ function statusOf(error: unknown): number | undefined {
   return match ? Number(match[1]) : undefined
 }
 
+function isDailyQuotaExhausted(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes('PerDay') || message.includes('per_day') || message.includes('PerDayPerProject')
+}
+
+function isInvalidKeyError(error: unknown): boolean {
+  const status = statusOf(error)
+  const message = error instanceof Error ? error.message : String(error)
+  return (
+    (status === 400 || status === 403) &&
+    (message.includes('API_KEY_INVALID') ||
+      message.includes('API key not valid') ||
+      message.includes('PERMISSION_DENIED') ||
+      message.includes('has been suspended'))
+  )
+}
+
 function isRetryableStatus(status: number | undefined): boolean {
   return status === 429 || status === 500 || status === 502 || status === 503 || status === 504
 }
 
-/** Honour an explicit retry delay if the provider sent one, else back off. */
+/** Honour an explicit retry delay if the provider sent one, else back off (capped at 15s). */
 function backoffMs(error: unknown, attempt: number): number {
   const message = error instanceof Error ? error.message : ''
   const seconds = message.match(/retry(?:-|\s)?(?:delay|after)["':\s]+(\d+)/i)
-  if (seconds?.[1]) return Number(seconds[1]) * 1000
+  if (seconds?.[1]) return Math.min(Number(seconds[1]) * 1000, 15_000)
   const base = 1000 * 2 ** (attempt - 1)
-  return base + Math.floor(Math.random() * 400)
+  return Math.min(base + Math.floor(Math.random() * 400), 15_000)
 }
 
 /** Models sometimes fence JSON despite being told not to. Cheap to tolerate. */
@@ -93,10 +114,18 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
     refillPerMs: (opts.tokensPerMinute ?? DEFAULT_TPM) / 60_000,
   })
 
+  const keyPool =
+    opts.keyPool ??
+    (opts.apiKeys && opts.apiKeys.length > 0
+      ? new GeminiKeyPool(opts.apiKeys)
+      : opts.apiKey
+        ? new GeminiKeyPool([opts.apiKey])
+        : GeminiKeyPool.fromEnv())
+
   const generate: RawGenerate =
     opts.generate ??
-    (async ({ system, prompt, schema, grounded, temperature, maxOutputTokens }) => {
-      const apiKey = opts.apiKey ?? process.env.GEMINI_API_KEY
+    (async ({ system, prompt, schema, grounded, temperature, maxOutputTokens, apiKey: callApiKey }) => {
+      const apiKey = callApiKey ?? (keyPool.hasAvailableKey() ? keyPool.getActiveKey() : undefined)
       if (!apiKey) throw new LlmError('PROVIDER', 'GEMINI_API_KEY is not set', 0)
       const ai = new GoogleGenAI({ apiKey })
 
@@ -122,44 +151,109 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
       return { text: response.text ?? '', sources }
     })
 
-  /** Shared retry envelope: rate limits back off, provider errors do not. */
+  /** Shared retry envelope: rate limits back off, daily quota and invalid keys fail over to next key. */
   async function attempt<T>(
-    run: (attemptNumber: number, note: string) => Promise<T>,
+    run: (attemptNumber: number, note: string, apiKey: string) => Promise<T>,
   ): Promise<T> {
+    if (keyPool.size === 0 && !opts.generate) {
+      throw new LlmError('PROVIDER', 'GEMINI_API_KEY is not set', 0)
+    }
+
+    const triedKeys = new Set<string>()
     let lastError: unknown
-    let note = ''
-    for (let n = 1; n <= maxAttempts; n += 1) {
-      await bucket.take(2000)
-      try {
-        return await run(n, note)
-      } catch (error) {
-        lastError = error
-        if (error instanceof LlmError && error.code === 'INVALID_JSON') {
-          note = `Your previous response could not be parsed: ${error.message}. Return only valid JSON matching the schema.`
-          continue
+
+    // If keyPool has keys, use them; if keyPool is empty (e.g. injected stub with no keys), use fallback placeholder
+    const availableKeysExist = keyPool.hasAvailableKey() || Boolean(opts.generate)
+
+    while (availableKeysExist && (keyPool.hasAvailableKey() || triedKeys.size === 0)) {
+      let currentKey = 'test-stub-key'
+      if (keyPool.size > 0) {
+        try {
+          currentKey = keyPool.getActiveKey()
+        } catch (err) {
+          throw new LlmError('RATE_LIMITED', (err as Error).message, 1)
         }
-        const status = statusOf(error)
-        if (!isRetryableStatus(status)) {
-          if (error instanceof LlmError) throw error
-          throw new LlmError('PROVIDER', `provider error: ${String(error)}`, n)
+      }
+
+      if (triedKeys.has(currentKey)) {
+        break
+      }
+      triedKeys.add(currentKey)
+
+      let note = ''
+      let keySwitched = false
+
+      for (let n = 1; n <= maxAttempts; n += 1) {
+        await bucket.take(2000)
+        try {
+          const result = await run(n, note, currentKey)
+          if (keyPool.size > 0) keyPool.markSuccess(currentKey)
+          return result
+        } catch (error) {
+          lastError = error
+          if (error instanceof LlmError && error.code === 'INVALID_JSON') {
+            note = `Your previous response could not be parsed: ${error.message}. Return only valid JSON matching the schema.`
+            continue
+          }
+
+          if (isDailyQuotaExhausted(error)) {
+            const next = keyPool.size > 0 ? keyPool.markDailyQuotaExhausted(currentKey, undefined, String(error)) : null
+            if (next && !triedKeys.has(next)) {
+              keySwitched = true
+              break
+            }
+            throw new LlmError('RATE_LIMITED', `daily quota exhausted on all available keys: ${String(error)}`, n)
+          }
+
+          if (isInvalidKeyError(error)) {
+            const next = keyPool.size > 0 ? keyPool.markInvalid(currentKey, String(error)) : null
+            if (next && !triedKeys.has(next)) {
+              keySwitched = true
+              break
+            }
+            throw new LlmError('PROVIDER', `provider error (invalid key): ${String(error)}`, n)
+          }
+
+          const status = statusOf(error)
+          if (!isRetryableStatus(status)) {
+            if (error instanceof LlmError) throw error
+            throw new LlmError('PROVIDER', `provider error: ${String(error)}`, n)
+          }
+
+          if (n === maxAttempts) {
+            if (keyPool.size > 1) {
+              const next = keyPool.rotate()
+              if (next && !triedKeys.has(next)) {
+                keySwitched = true
+                break
+              }
+            }
+            break
+          }
+
+          await sleep(backoffMs(error, n))
         }
-        if (n === maxAttempts) break
-        await sleep(backoffMs(error, n))
+      }
+
+      if (!keySwitched) {
+        break
       }
     }
+
     if (lastError instanceof LlmError) throw lastError
-    throw new LlmError('RATE_LIMITED', `gave up after ${maxAttempts} attempts: ${String(lastError)}`, maxAttempts)
+    throw new LlmError('RATE_LIMITED', `gave up after ${maxAttempts} attempts across available keys: ${String(lastError)}`, maxAttempts)
   }
 
   return {
     async generateJson<T>(call: LlmCall, parse: (raw: unknown) => T): Promise<T> {
-      return attempt(async (n, note) => {
+      return attempt(async (n, note, activeKey) => {
         const { text } = await generate({
           system: call.system,
           prompt: note ? `${call.prompt}\n\n${note}` : call.prompt,
           schema: call.schema,
           temperature: call.temperature,
           maxOutputTokens: call.maxOutputTokens,
+          apiKey: activeKey,
         })
         if (text.trim().length === 0) throw new LlmError('EMPTY', 'model returned an empty response', n)
         let parsedJson: unknown
@@ -177,8 +271,13 @@ export function createGeminiClient(opts: GeminiOptions = {}): LlmClient {
     },
 
     async generateGrounded(call: { system: string; prompt: string }): Promise<GroundedResult> {
-      return attempt(async () => {
-        const { text, sources } = await generate({ system: call.system, prompt: call.prompt, grounded: true })
+      return attempt(async (_n, _note, activeKey) => {
+        const { text, sources } = await generate({
+          system: call.system,
+          prompt: call.prompt,
+          grounded: true,
+          apiKey: activeKey,
+        })
         return { text: text.trim(), sources: [...new Set(sources ?? [])] }
       })
     },

@@ -14,7 +14,7 @@ The application takes a pasted job description, a target company's website addre
 | **Backend** | Node.js, Express, TypeScript | Long-lived process suited for multi-step background pipeline jobs without serverless execution timeouts. |
 | **Database** | MongoDB & Mongoose | Flexible document model matching the nested, versioned preparation kit schema and practice attempts. |
 | **Core Shared** | `@ipk/core` (npm workspace) | Single source of truth for schemas (Zod), deterministic algorithms, crawler, and pipeline runner shared by API and CLI. |
-| **LLM Provider** | Google Gemini (`gemini-3.6-flash`) | Native JSON schema enforcement (`responseSchema`), free-tier availability, and search grounding. |
+| **LLM Provider** | Google Gemini (`gemini-3.5-flash`) | Native JSON schema enforcement (`responseSchema`), free-tier availability, and search grounding. |
 | **Scraping** | `undici` + `cheerio` + `robots-parser` | Lightweight HTML parsing and link extraction respecting `robots.txt` without heavy browser engine overhead. |
 | **Testing** | Vitest | Fast unified test runner across all monorepo workspaces (353 tests across 31 files). |
 
@@ -46,8 +46,9 @@ npm run dev:web    # Next.js web app on http://localhost:3000
 
 | Variable | Target | Purpose |
 |---|---|---|
-| `GEMINI_API_KEY` | `@ipk/core`, API, CLI | Google AI Studio API key for all generation steps. |
-| `GEMINI_MODEL` | `@ipk/core` | Model identifier (defaults to `gemini-2.5-flash`). |
+| `GEMINI_API_KEY` | `@ipk/core`, API, CLI | Google AI Studio API key for generation steps. Comma-separated keys also supported. |
+| `GEMINI_API_KEYS` | `@ipk/core`, API, CLI | Multi-key pool: comma-separated Gemini keys with automatic failover on daily quota exhaustion. |
+| `GEMINI_MODEL` | `@ipk/core` | Model identifier (defaults to `gemini-3.5-flash`). |
 | `MONGODB_URI` | API | MongoDB connection string (e.g. `mongodb://127.0.0.1:27017/ipk`). |
 | `PORT` | API | Port Express listens on (default `4000`). |
 | `JWT_SECRET` | API | Secret for signing session cookies (`openssl rand -hex 32`). |

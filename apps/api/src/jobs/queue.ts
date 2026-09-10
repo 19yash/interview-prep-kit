@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { createGeminiClient, runPipeline, type LlmClient, type Progress } from '@ipk/core'
-import { env } from '../env.js'
+import { env, sharedGeminiKeyPool } from '../env.js'
 import { KitModel } from '../models/kit.js'
 
 /** Injected by tests so the real job path runs without a real provider. */
@@ -47,11 +47,21 @@ export function enqueueGeneration(kitId: string, llm?: LlmClient): void {
       await doc.save()
 
       let lastWrite = 0
+      const lastStatus: Record<string, string> = {}
+      let lastCurrent: string | null = null
+
       const onProgress = async (progress: Progress) => {
         const now = Date.now()
-        const finished = progress.current === null
-        // Throttled, but always write the final state of a step.
-        if (!finished && now - lastWrite < PROGRESS_WRITE_INTERVAL_MS) return
+        let stateChanged = progress.current !== lastCurrent
+        lastCurrent = progress.current
+        for (const step of progress.steps) {
+          if (lastStatus[step.name] !== step.status) {
+            stateChanged = true
+            lastStatus[step.name] = step.status
+          }
+        }
+        // Always write immediately on state transitions or completion; only throttle heartbeats.
+        if (!stateChanged && now - lastWrite < PROGRESS_WRITE_INTERVAL_MS) return
         lastWrite = now
         await KitModel.updateOne({ _id: kitId }, { $set: { progress } })
       }
@@ -60,7 +70,7 @@ export function enqueueGeneration(kitId: string, llm?: LlmClient): void {
         jd: doc.input.jd,
         companyUrl: doc.input.companyUrl,
         days: doc.input.days,
-        llm: llm ?? testLlm ?? createGeminiClient({ apiKey: env.GEMINI_API_KEY || undefined }),
+        llm: llm ?? testLlm ?? createGeminiClient({ keyPool: sharedGeminiKeyPool }),
         allowPrivate: process.env.NODE_ENV !== 'production',
         onProgress,
       })

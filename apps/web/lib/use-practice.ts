@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from './api'
 import type { Flashcard, PracticeOrder } from './types'
 
@@ -27,6 +27,9 @@ export function usePractice({
   cards: Flashcard[]
   client?: PracticeClient
 }) {
+  const cardsRef = useRef(cards)
+  cardsRef.current = cards
+
   const [status, setStatus] = useState<Status>('loading')
   const [error, setError] = useState<string | null>(null)
   const [queue, setQueue] = useState<Flashcard[]>([])
@@ -39,19 +42,21 @@ export function usePractice({
 
   const resolve = useCallback(
     (order: string[]): Flashcard[] => {
-      const byId = new Map(cards.map((card) => [card.id, card]))
+      const currentCards = cardsRef.current
+      const byId = new Map(currentCards.map((card) => [card.id, card]))
       const resolved = order
         .map((id) => byId.get(id))
         .filter((card): card is Flashcard => card !== undefined)
       // An order that resolves to nothing but a non-empty deck means the two
       // have drifted; the deck is the truth to fall back on.
-      return resolved.length > 0 ? resolved : cards
+      return resolved.length > 0 ? resolved : currentCards
     },
-    [cards],
+    [],
   )
 
   const start = useCallback(async () => {
-    if (cards.length === 0) {
+    const currentCards = cardsRef.current
+    if (currentCards.length === 0) {
       setQueue([])
       setStatus('empty')
       return
@@ -71,11 +76,21 @@ export function usePractice({
       setError(caught instanceof ApiError ? caught.message : 'could not start a practice session')
       setStatus('error')
     }
-  }, [cards.length, client, kitId, resolve])
+  }, [client, kitId, resolve])
+
+  const initializedRef = useRef<string | null>(null)
+  const prevCardsLengthRef = useRef(cards.length)
 
   useEffect(() => {
-    void start()
-  }, [start])
+    const kitChanged = initializedRef.current !== kitId
+    const hadNoCards = prevCardsLengthRef.current === 0 && cards.length > 0
+    prevCardsLengthRef.current = cards.length
+
+    if (kitChanged || hadNoCards) {
+      initializedRef.current = kitId
+      void start()
+    }
+  }, [kitId, cards.length, start])
 
   const move = useCallback(
     (delta: number) => {

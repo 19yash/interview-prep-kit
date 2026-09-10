@@ -18,7 +18,7 @@ import {
   type SectionKey,
 } from '@ipk/core'
 import { Router } from 'express'
-import { env } from '../env.js'
+import { env, sharedGeminiKeyPool } from '../env.js'
 import { getTestLlm } from '../jobs/queue.js'
 import { requireAuth } from '../middleware/auth.js'
 import { HttpError } from '../middleware/errors.js'
@@ -64,7 +64,7 @@ regenerateRouter.post('/:id/regenerate/:section', async (req, res, next) => {
     await doc.save()
 
     const kit = structuredClone(doc.kit) as Kit
-    const llm = getTestLlm() ?? createGeminiClient({ apiKey: env.GEMINI_API_KEY || undefined })
+    const llm = getTestLlm() ?? createGeminiClient({ keyPool: sharedGeminiKeyPool })
 
     try {
       if (section === 'schedule') {

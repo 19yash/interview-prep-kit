@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import { FlashcardPlayer } from '@/components/practice/FlashcardPlayer'
 import { PracticeEmpty } from '@/components/practice/PracticeEmpty'
@@ -16,11 +16,18 @@ import type { KitDoc } from '@/lib/types'
 
 function Session({ doc, refresh }: { doc: KitDoc; refresh: () => Promise<void> }) {
   const cards = doc.kit?.flashcards ?? []
+  const requirements = doc.kit?.role.requirements ?? []
   const session = usePractice({ kitId: doc.id, cards })
   const stats = practiceStats(cards, doc.practice)
 
+  const hasRefreshedRef = useRef(false)
   useEffect(() => {
-    if (session.finished) void refresh()
+    if (session.finished && !hasRefreshedRef.current) {
+      hasRefreshedRef.current = true
+      void refresh()
+    } else if (!session.finished) {
+      hasRefreshedRef.current = false
+    }
   }, [session.finished, refresh])
 
   if (session.status === 'empty') return <PracticeEmpty kitId={doc.id} />
@@ -45,17 +52,21 @@ function Session({ doc, refresh }: { doc: KitDoc; refresh: () => Promise<void> }
         </div>
         <Link href={`/kits/${doc.id}`}>
           <Button variant="secondary" size="sm">
-            Back to the kit
+            Back to Kit Builder
           </Button>
         </Link>
       </div>
 
       {session.finished ? (
         <SessionSummary
-          stats={practiceStats(cards, doc.practice)}
+          stats={stats}
           ratedThisSession={session.ratedThisSession.size}
           onRestart={() => void session.restart()}
           kitId={doc.id}
+          requirements={requirements}
+          cards={cards}
+          practiceAttempts={doc.practice}
+          sessionRatings={session.ratedThisSession}
         />
       ) : (
         <FlashcardPlayer session={session} deckSize={stats.total} />

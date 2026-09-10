@@ -15,6 +15,8 @@ if (existsSync(localEnvPath) && localEnvPath !== rootEnvPath) {
 }
 
 
+import { GeminiKeyPool } from '@ipk/core'
+
 const EnvSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   MONGODB_URI: z.string().default('mongodb://127.0.0.1:27017/ipk'),
@@ -22,6 +24,7 @@ const EnvSchema = z.object({
   WEB_ORIGIN: z.string().default('http://localhost:3000'),
   NODE_ENV: z.string().default('development'),
   GEMINI_API_KEY: z.string().default(''),
+  GEMINI_API_KEYS: z.string().default(''),
 })
 
 /** Fails fast at boot rather than at the first request. */
@@ -32,7 +35,20 @@ export const env = EnvSchema.parse({
   WEB_ORIGIN: process.env.WEB_ORIGIN,
   NODE_ENV: process.env.NODE_ENV,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GEMINI_API_KEYS: process.env.GEMINI_API_KEYS,
 })
+
+export function parseGeminiApiKeys(envKeys?: string, envKey?: string): string[] {
+  const combined = [envKeys ?? '', envKey ?? ''].join(',')
+  return combined
+    .split(',')
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0)
+}
+
+export const sharedGeminiKeyPool = new GeminiKeyPool(
+  parseGeminiApiKeys(env.GEMINI_API_KEYS, env.GEMINI_API_KEY)
+)
 
 export const isProduction = env.NODE_ENV === 'production'
 

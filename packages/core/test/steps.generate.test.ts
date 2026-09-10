@@ -180,8 +180,8 @@ describe('generateAllQuestions', () => {
       },
     })
     const { questions } = await generateAllQuestions({ ...base, requirements, nextId: createIdFactory('q'), llm })
-    // technical, behavioural, company-fit and system-design are all populated here.
-    expect(new Set(seenCategories).size).toBeGreaterThanOrEqual(3)
+    // technical and behavioural/domain groups are called
+    expect(new Set(seenCategories).size).toBe(2)
     expect(new Set(questions.map((q) => q.id)).size).toBe(questions.length)
   })
 

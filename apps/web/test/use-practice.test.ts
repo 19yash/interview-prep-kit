@@ -159,4 +159,32 @@ describe('usePractice', () => {
     expect(rendered.result.current.index).toBe(0)
     expect(rendered.result.current.ratedThisSession.size).toBe(0)
   })
+
+  it('does not restart automatically when cards prop reference changes after finishing', async () => {
+    const stub = client(['f1', 'f2'])
+    let deck = [...cards.slice(0, 2)]
+    const rendered = renderHook(
+      ({ currentCards }) => usePractice({ kitId: 'k1', cards: currentCards, client: stub }),
+      { initialProps: { currentCards: deck } },
+    )
+    await waitFor(() => expect(rendered.result.current.status).not.toBe('loading'))
+
+    await act(async () => {
+      await rendered.result.current.rate(2)
+    })
+    await act(async () => {
+      await rendered.result.current.rate(3)
+    })
+    expect(rendered.result.current.finished).toBe(true)
+    expect(stub.practiceOrder).toHaveBeenCalledTimes(1)
+
+    // Re-render with a new array reference (like parent doc refresh())
+    deck = [...deck]
+    rendered.rerender({ currentCards: deck })
+
+    // Must remain finished and not restart automatically
+    expect(rendered.result.current.finished).toBe(true)
+    expect(rendered.result.current.index).toBe(2)
+    expect(stub.practiceOrder).toHaveBeenCalledTimes(1)
+  })
 })

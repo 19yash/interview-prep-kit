@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { CONFIDENCE_LABELS, confidenceLabel, latestByCard, practiceStats } from '../lib/practice-stats.js'
-import type { Flashcard } from '../lib/types.js'
+import { CONFIDENCE_LABELS, confidenceLabel, latestByCard, practiceStats, requirementConfidence } from '../lib/practice-stats.js'
+import type { Flashcard, Requirement } from '../lib/types.js'
 
 function card(id: string, front = `front ${id}`): Flashcard {
   return { id, front, back: `back ${id}`, requirement_ids: ['r1'], origin: 'generated', pinned: false, rev: 0 }
@@ -103,5 +103,107 @@ describe('confidenceLabel', () => {
 
   it('falls back rather than throwing on an unexpected value', () => {
     expect(confidenceLabel(9)).toBe('Unrated')
+  })
+})
+
+describe('requirementConfidence', () => {
+  const req1: Requirement = { id: 'r1', text: 'React and TypeScript', kind: 'technical', priority: 'must' }
+  const req2: Requirement = { id: 'r2', text: 'Distributed Systems', kind: 'technical', priority: 'nice' }
+  const req3: Requirement = { id: 'r3', text: 'Cross-functional communication', kind: 'behavioural', priority: 'must' }
+
+  const card1: Flashcard = {
+    id: 'c1',
+    front: 'React lifecycle',
+    back: 'Mounting, updating, unmounting',
+    requirement_ids: ['r1'],
+    origin: 'generated',
+    pinned: false,
+    rev: 0,
+  }
+  const card2: Flashcard = {
+    id: 'c2',
+    front: 'TypeScript generics',
+    back: 'Type parameters',
+    requirement_ids: ['r1'],
+    origin: 'generated',
+    pinned: false,
+    rev: 0,
+  }
+  const card3: Flashcard = {
+    id: 'c3',
+    front: 'CAP theorem',
+    back: 'Consistency, Availability, Partition tolerance',
+    requirement_ids: ['r2'],
+    origin: 'generated',
+    pinned: false,
+    rev: 0,
+  }
+
+  it('marks requirements with no rated cards as untested', () => {
+    const result = requirementConfidence([req1], [card1], [])
+    expect(result).toHaveLength(1)
+    expect(result[0]!.status).toBe('untested')
+    expect(result[0]!.score).toBeNull()
+    expect(result[0]!.totalCards).toBe(1)
+    expect(result[0]!.ratedCards).toBe(0)
+  })
+
+  it('calculates average score and categorizes status accurately', () => {
+    // req1: card1 = 3, card2 = 3 => avg 3.0 => 'confident'
+    // req2: card3 = 1 => avg 1.0 => 'needs-practice'
+    const attempts = [
+      { cardId: 'c1', confidence: 3, seenAt: '2026-09-08T10:00:00Z' },
+      { cardId: 'c2', confidence: 3, seenAt: '2026-09-08T10:01:00Z' },
+      { cardId: 'c3', confidence: 1, seenAt: '2026-09-08T10:02:00Z' },
+    ]
+    const result = requirementConfidence([req1, req2], [card1, card2, card3], attempts)
+
+    const r1 = result.find((r) => r.requirement.id === 'r1')!
+    const r2 = result.find((r) => r.requirement.id === 'r2')!
+
+    expect(r1.score).toBe(3)
+    expect(r1.status).toBe('confident')
+    expect(r1.ratedCards).toBe(2)
+
+    expect(r2.score).toBe(1)
+    expect(r2.status).toBe('needs-practice')
+    expect(r2.ratedCards).toBe(1)
+  })
+
+  it('prioritizes sessionRatings over older attempts', () => {
+    const attempts = [{ cardId: 'c3', confidence: 1, seenAt: '2026-09-08T10:00:00Z' }]
+    const sessionRatings = new Map<string, 1 | 2 | 3>([['c3', 3]])
+
+    const result = requirementConfidence([req2], [card3], attempts, sessionRatings)
+    expect(result[0]!.score).toBe(3)
+    expect(result[0]!.status).toBe('confident')
+  })
+
+  it('sorts needs-practice first, then shaky, then untested, then confident, with must-haves prioritized', () => {
+    // req1: confident (3)
+    // req2: nice-to-have needs-practice (1)
+    // req3: must-have needs-practice (1)
+    const card4: Flashcard = {
+      id: 'c4',
+      front: 'Tell me about a conflict',
+      back: 'STAR method',
+      requirement_ids: ['r3'],
+      origin: 'generated',
+      pinned: false,
+      rev: 0,
+    }
+
+    const attempts = [
+      { cardId: 'c1', confidence: 3, seenAt: '2026-09-08T10:00:00Z' },
+      { cardId: 'c2', confidence: 3, seenAt: '2026-09-08T10:01:00Z' },
+      { cardId: 'c3', confidence: 1, seenAt: '2026-09-08T10:02:00Z' },
+      { cardId: 'c4', confidence: 1, seenAt: '2026-09-08T10:03:00Z' },
+    ]
+
+    const result = requirementConfidence([req1, req2, req3], [card1, card2, card3, card4], attempts)
+    // req3 is must-have with needs-practice -> index 0
+    // req2 is nice-to-have with needs-practice -> index 1
+    // req1 is confident -> index 2
+    expect(result.map((r) => r.requirement.id)).toEqual(['r3', 'r2', 'r1'])
   })
 })

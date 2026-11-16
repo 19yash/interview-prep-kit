@@ -38,6 +38,13 @@ describe('api client', () => {
     expect(fetchMock.mock.calls[0]![0]).toBe('http://api.test/api/kits/abc')
   })
 
+  it('calls relative paths when NEXT_PUBLIC_API_URL is "/", so a same-origin proxy keeps the cookie first-party', async () => {
+    process.env.NEXT_PUBLIC_API_URL = '/'
+    const fetchMock = mockFetch({ body: { kits: [] } })
+    await api.listKits()
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/kits')
+  })
+
   it('sends json with the right content type on a post', async () => {
     const fetchMock = mockFetch({ status: 202, body: { id: 'k1', status: 'queued' } })
     await api.createKit({ jd: 'text', companyUrl: 'https://x.test/', days: 3 })

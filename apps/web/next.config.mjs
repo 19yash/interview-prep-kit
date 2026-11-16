@@ -6,7 +6,12 @@
 // 401. Setting API_PROXY_URL makes Next proxy /api/* to the API, the browser
 // only ever talks to this origin, and the cookie becomes first-party. Pair it
 // with NEXT_PUBLIC_API_URL=/ so the client calls relative paths.
-const apiProxyUrl = (process.env.API_PROXY_URL ?? '').replace(/\/+$/, '')
+//
+// Rewrites are compiled at build time, so a variable missing from the build
+// silently leaves /api/* as a 404. On Vercel (which sets VERCEL=1 during the
+// build) fall back to the deployed API instead.
+const DEFAULT_VERCEL_API = 'https://interview-prep-kit-5g1s.onrender.com'
+const apiProxyUrl = (process.env.API_PROXY_URL || (process.env.VERCEL ? DEFAULT_VERCEL_API : '')).replace(/\/+$/, '')
 
 const nextConfig = {
   reactStrictMode: true,
